@@ -62,6 +62,10 @@
   #include <SPI.h>
 #endif
 
+// BEGIN INFRARED SENSOR VARIABLES /////////////////////////////////////////////
+volatile int ADC_value;
+// END INFRARED SENSOR VARIABLES ///////////////////////////////////////////////
+
 Stepper stepper; // Singleton
 
 // public:
@@ -606,12 +610,20 @@ void Stepper::isr() {
       uint32_t pulse_start = TCNT0;
     #endif
 
-    #if HAS_X_STEP
-      PULSE_START(X);
-    #endif
-    #if HAS_Y_STEP
-      PULSE_START(Y);
-    #endif
+    // BEGIN INFRARED SENSOR CODE //////////////////////////////////////////////
+      _COUNTER(X) += current_block->steps[_AXIS(X)];
+      if (_COUNTER(X) > 0) {
+        _APPLY_STEP(X)(!_INVERT_STEP_PIN(X),0);
+        //ADC_value = analogRead(IR_1_PIN);
+        //SERIAL_ECHOLN(ADC_value);
+      }
+
+    _COUNTER(Y) += current_block->steps[_AXIS(Y)];
+    if (_COUNTER(Y) > 0) {
+      _APPLY_STEP(Y)(!_INVERT_STEP_PIN(Y),0);
+    }
+    // END INFRARED SENSOR CODE ////////////////////////////////////////////////
+
     #if HAS_Z_STEP
       PULSE_START(Z);
     #endif
