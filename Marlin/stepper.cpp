@@ -63,7 +63,9 @@
 #endif
 
 // BEGIN INFRARED SENSOR VARIABLES /////////////////////////////////////////////
-volatile int ADC_value;
+volatile bool infrared_level;
+volatile bool infrared_level_old = 0;
+volatile float step_count = 0.0;
 // END INFRARED SENSOR VARIABLES ///////////////////////////////////////////////
 
 Stepper stepper; // Singleton
@@ -614,13 +616,27 @@ void Stepper::isr() {
       _COUNTER(X) += current_block->steps[_AXIS(X)];
       if (_COUNTER(X) > 0) {
         _APPLY_STEP(X)(!_INVERT_STEP_PIN(X),0);
-        //ADC_value = analogRead(IR_1_PIN);
-        //SERIAL_ECHOLN(ADC_value);
+
+        step_count++; // increment the step count in the X axis
+
+        // READ CURRENT IR LOGIC STATE
+        infrared_level = digitalRead(IR_1_PIN);
+
+        // CHECK IF TRANSITION HAPPENED
+        if (!(infrared_level == infrared_level_old)) {
+          if(infrared_level) {step_count -= 333.0;} // correction: subtract if previous was white
+          else {step_count += 333.0;} // correction: add if previous was black
+          infrared_level_old = infrared_level;
+          step_count = step_count/200.0; // convert steps to mm
+          SERIAL_ECHOLN(step_count); // print the lenght of the square in mm
+          step_count = 0;
+        }
       }
 
     _COUNTER(Y) += current_block->steps[_AXIS(Y)];
     if (_COUNTER(Y) > 0) {
       _APPLY_STEP(Y)(!_INVERT_STEP_PIN(Y),0);
+      SERIAL_ECHOLN(digitalRead(IR_1_PIN));
     }
     // END INFRARED SENSOR CODE ////////////////////////////////////////////////
 

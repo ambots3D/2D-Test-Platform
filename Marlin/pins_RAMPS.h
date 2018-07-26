@@ -174,9 +174,9 @@
 //
 // Infrared sensors
 //
-#define IR_1_PIN          13   // Analog Input
-#define IR_2_PIN          14   // Analog Input
-#define IR_3_PIN          15   // Analog Input
+#define IR_1_PIN          67 // 13   // Analog Input
+#define IR_2_PIN          68 // 14   // Analog Input
+#define IR_3_PIN          69 // 15   // Analog Input
 
 // SPI for Max6675 or Max31855 Thermocouple
 #if DISABLED(SDSUPPORT)
